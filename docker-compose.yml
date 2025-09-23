@@ -1,0 +1,117 @@
+networks:
+  reddit-network:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    container_name: reddit-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - target: 5432
+        published: 5432
+        protocol: tcp
+        mode: host
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    networks:
+      - reddit-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: reddit-redis
+    ports:
+      - target: 6379
+        published: 6379
+        protocol: tcp
+        mode: host
+    volumes:
+      - redis_data:/data
+    networks:
+      - reddit-network
+    restart: unless-stopped
+
+  kafka:
+    image: bitnami/kafka:3.4.0
+    container_name: reddit-kafka
+    environment:
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    ports:
+      - target: 9092
+        published: 9092
+        protocol: tcp
+        mode: host
+    volumes:
+      - kafka_data:/bitnami/kafka
+    networks:
+      - reddit-network
+    restart: unless-stopped
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: reddit-kafka-ui
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local-kraft
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_KRAFTENABLED=true
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host
+    networks:
+      - reddit-network
+    restart: unless-stopped
+
+  auth-service:
+    build: 
+      context: ./auth_service
+      dockerfile: Dockerfile
+    environment:
+      - APP_CONFIG__DB__URL=postgresql://user:password@postgres:5432/auth_db
+      - APP_CONFIG__REDIS__HOST=redis
+      - APP_CONFIG__KAFKA__BOOTSTRAP_SERVERS=kafka:9092
+    ports:
+      - "50051:50051" 
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    volumes:
+      - ./auth_service:/app  
+
+  api-gateway:
+    build:
+      context: ./api_gateway  
+      dockerfile: Dockerfile
+    environment:
+      - APP_CONFIG__AUTH_SERVICE__URL=auth-service:50051
+      - APP_CONFIG__REDIS__HOST=redis
+    ports:
+      - "8000:8000"  
+    depends_on:
+      - auth-service
+      - redis
+    volumes:
+      - ./api_gateway:/app 
+
+volumes:
+  postgres_data:
+  redis_data:
+  kafka_data:

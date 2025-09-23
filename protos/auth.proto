@@ -1,0 +1,66 @@
+// protos/auth.protove
+syntax = "proto3";
+
+package auth;
+
+service AuthService {
+  rpc RegisterUser (RegisterUserRequest) returns (RegisterUserResponse);
+  rpc LoginUser (LoginUserRequest) returns (LoginUserResponse);
+  rpc ValidateToken (TokenRequest) returns (TokenResponse);
+  rpc SendVerifyCode (SendVerifyCodeRequest) returns (SendVerifyCodeResponse);
+  rpc CheckVerifyCode (CheckVerifyCodeRequest) returns (CheckVerifyCodeResponse);
+}
+
+message RegisterUserRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+  string repeat_password = 4;
+}
+
+message RegisterUserResponse {
+  bool success = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+  string message = 4;
+}
+
+message LoginUserRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginUserResponse {
+  bool success = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+  string message = 4;
+}
+
+message TokenRequest {
+  string token = 1;
+}
+
+message TokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  string message = 3;
+}
+
+message SendVerifyCodeRequest {
+  string email = 1;
+}
+
+message SendVerifyCodeResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CheckVerifyCodeRequest {
+  int32 code = 1;
+}
+
+message CheckVerifyCodeResponse {
+  bool success = 1;
+  string message = 2;
+}
