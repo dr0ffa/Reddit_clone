@@ -10,4 +10,7 @@ auth_router = APIRouter(
 
 @auth_router.post("/register")
 async def register(request: RegisterUserRequest, response: Response):
-    
+    if request.password != request.repeat_password:
+        raise HTTPException(status_code=400, detail="passwords do not match")
+    try: grpcResponse = register_user(username=request.username, email=request.email, password=request.password, repeat_password=request.repeat_password)
+    except grpc.RpcError as e: handle_grpc_error(e)
