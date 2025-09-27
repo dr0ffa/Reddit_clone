@@ -70,21 +70,10 @@ message EnableMFARequest {
   string type = 2;
 }
 
-message EnableMFAResponse {
-  bool success = 1;
-  string secret = 2;
-  string message = 3;
-}
-
 message LoginStep1Response {
   bool success = 1;
   string mfa_type = 2; 
   string mfa_token = 3;
-}
-
-message LoginStep2Request {
-  string mfa_token = 1;
-  string code = 2;
 }
 
 message LoginStep2Response {
@@ -92,4 +81,11 @@ message LoginStep2Response {
   string access_token = 2;   
   string refresh_token = 3;  
   string message = 4;        
+}
+
+message EnableMFAResponse {
+  bool success = 1;
+  string secret = 2;         // TOTP секрет
+  string otpauth_url = 3;    // для генерации QR-кода
+  string message = 4;
 }
