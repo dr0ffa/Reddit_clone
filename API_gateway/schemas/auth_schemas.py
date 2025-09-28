@@ -4,7 +4,7 @@ import re
 class RegisterUserRequest(BaseModel):
     username: str
     email: str
-    passsword: str
+    password: str
     repeat_password: str
 
     @field_validator("email")
@@ -20,3 +20,10 @@ class RegisterUserRequest(BaseModel):
         if not re.search(r"\d", v):
             raise ValueError("Password must contain a digit")
         return v
+
+
+class AuthUserRequest(BaseModel):
+    username: str
+    email: str
+    password: str
+    
