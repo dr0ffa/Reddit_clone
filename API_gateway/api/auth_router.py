@@ -1,4 +1,4 @@
-from fastapi import HTTPException, APIRouter, Depends, Response, Request
+#from fastapi import HTTPException, APIRouter, Depends, Response, Request
 from sqlalchemy.orm import Session
 from authx import AuthX, AuthXConfig, RequestToken
 from datetime import timedelta
@@ -10,9 +10,9 @@ from API_gateway.grpc_client import register_user
 from API_gateway.core.auth_config import security
 
 from auth_service.core.config import settings
-from auth_service.core.hash_password import hash_password, verify_password
-from auth_service.models.models_db import Users, Mfa
-from auth_service.models.database import get_db
+#from auth_service.core.hash_password import hash_password, verify_password
+#from auth_service.models.models_db import Users, Mfa
+#from auth_service.models.database import get_db
 
 import grpc
 
@@ -24,28 +24,38 @@ auth_router = APIRouter(
 
 
 @auth_router.post("/register")
-async def register(request: RegisterUserRequest, response: Response, db: Session = Depends(get_db)):
-    if request.password != request.repeat_password:
-        raise HTTPException(status_code=400, detail="passwords do not match")
-    
-    existing_user = db.query(Users).filter(Users.username == request.username).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username already exists")
-
-    try: grpcResponse = register_user(username=request.username, email=request.email, password=request.password, repeat_password=request.repeat_password)
+async def register(request: RegisterUserRequest):
+    try:
+        grpcResponse = register_user(
+            username=request.username,
+            email=request.email, 
+            password=request.password, 
+            repeat_password=request.repeat_password
+        )
+        return {
+            "message": grpcResponse.message,
+            "user_id": grpcResponse.user_id
+        }
     except grpc.RpcError as e: handle_grpc_error(e)
-    hashed_password = hash_password(request.password)
-    new_user = Users(username=request.username, hashed_password=request.password, email=request.email)
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    return {"message": "User registered successfully", "user_id": new_user.id}
 
 
-@auth_router.post("/auth")
-async def auth(request: AuthUserRequest, response: Response, db: Session = Depends(get_db)):
+@auth_router.post("/login")
+async def login(request: AuthUserRequest, response: Response, db: Session = Depends(get_db)):
+    try:
+        grpcResponse = register_user(
+            username=request.username,
+            email=request.email, 
+            password=request.password, 
+            repeat_password=request.repeat_password
+        )
+        return {
+            "message": grpcResponse.message,
+            "user_id": grpcResponse.user_id
+        }
+    except grpc.RpcError as e: handle_grpc_error(e)
+
+
+
     user = db.query(Users).filter(Users.username == request.username).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
