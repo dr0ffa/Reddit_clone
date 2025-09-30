@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import auth_service.generated_proto.auth_pb2 as auth__pb2
+import generated_proto.auth_pb2 as auth__pb2
 
 GRPC_GENERATED_VERSION = '1.75.0'
 GRPC_VERSION = grpc.__version__

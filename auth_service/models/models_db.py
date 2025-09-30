@@ -1,5 +1,5 @@
 import uuid
-from auth_service.models.database import Base, engine
+from models.database import Base, engine
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Enum, Boolean
 from sqlalchemy.orm import relationship

@@ -1,10 +1,10 @@
 import grpc
 from concurrent import futures
 
-from auth_service.generated_proto import auth_pb2, auth_pb2_grpc
-from auth_service.models.database import get_db_context
-from auth_service.models.models_db import Users, Mfa
-from auth_service.core.hash_password import hash_password, verify_password
+from generated_proto import auth_pb2, auth_pb2_grpc
+from models.database import get_db_context
+from models.models_db import Users, Mfa
+from core.hash_password import hash_password, verify_password
 
 
 class AuthService(auth_pb2_grpc.AuthServiceServicer):
@@ -27,13 +27,12 @@ class AuthService(auth_pb2_grpc.AuthServiceServicer):
             db.commit()
             db.refresh(new_user)
 
-
         return auth_pb2.RegisterUserResponse(
             success=True,
             access_token="access_token_sample",
             refresh_token="refresh_token_sample",
             message="User registered successfully",
-            user_id=new_user.id
+            #user_id=new_user.id #если оставлять перегенерировать прото
         )
 
     def LoginUser(self, request, context):
