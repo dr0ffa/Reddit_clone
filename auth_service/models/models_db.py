@@ -1,9 +1,9 @@
 import uuid
-from models.database import Base, engine
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Enum, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean
+from sqlalchemy.orm import relationship, declarative_base
 from datetime import datetime, timezone
+from models.database import Base
 
 
 class Users(Base):
@@ -13,6 +13,8 @@ class Users(Base):
     username = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
+
+    mfa = relationship("Mfa", back_populates="user", cascade="all, delete-orphan")
 
 class Mfa(Base):
     __tablename__ = "mfa"
@@ -24,7 +26,4 @@ class Mfa(Base):
     enabled = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
-    user = relationship("User", back_populates="mfa")
-
-Base.metadata.create_all(bind=engine)
-
+    user = relationship("Users", back_populates="mfa")

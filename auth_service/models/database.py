@@ -1,22 +1,23 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
-from contextlib import contextmanager
-
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
+from contextlib import asynccontextmanager
 
 DATABASE_URL = "postgresql+asyncpg://user:password@db:5432/auth-db"
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = create_async_engine(DATABASE_URL, echo=True, future=True)
+
+AsyncSessionLocal = async_sessionmaker(
+    engine,
+    expire_on_commit=False,
+)
+
 Base = declarative_base()
 
-@contextmanager
-def get_db_context():
-    db = SessionLocal()
-    try:
-        yield db
-        db.commit()  
-    except:
-        db.rollback()
-        raise
-    finally:
-        db.close()
+@asynccontextmanager
+async def get_db_context():
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        except:
+            await session.rollback()
+            raise

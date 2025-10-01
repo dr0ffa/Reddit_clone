@@ -39,7 +39,7 @@ async def register(request: RegisterUserRequest):
     except grpc.RpcError as e: handle_grpc_error(e)
 
 
-@auth_router.post("/login")
+"""@auth_router.post("/login")
 async def login(request: AuthUserRequest, response: Response, db: Session = Depends(get_db)):
     try:
         grpcResponse = register_user(
@@ -75,4 +75,4 @@ async def login(request: AuthUserRequest, response: Response, db: Session = Depe
         return {"username": user, "post": request, "access_token": access_token, "refresh_token": refresh_token}
 
         
-        
+        """
