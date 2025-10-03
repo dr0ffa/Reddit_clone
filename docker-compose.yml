@@ -1,7 +1,3 @@
-networks:
-  reddit-network:
-    driver: bridge
-
 services:
 
   auth-db:
@@ -81,13 +77,13 @@ services:
       context: ./auth_service
       dockerfile: Dockerfile
     environment:
-      - APP_CONFIG__DB__URL=postgresql://user:password@postgres:5432/auth_db
+      - APP_CONFIG__DB__URL=postgresql+asyncpg://auth_user:auth_pass@auth-db:5432/auth_db
       - APP_CONFIG__REDIS__HOST=redis
       - APP_CONFIG__KAFKA__BOOTSTRAP_SERVERS=kafka:9092
     ports:
       - "50051:50051" 
     depends_on:
-      - postgres
+      - auth-db
       - redis
       - kafka
     volumes:
@@ -95,7 +91,7 @@ services:
 
   api-gateway:
     build:
-      context: ./api_gateway  
+      context: ./api_gateway 
       dockerfile: Dockerfile
     environment:
       - APP_CONFIG__AUTH_SERVICE__URL=auth-service:50051
@@ -109,6 +105,10 @@ services:
       - ./api_gateway:/app 
 
 volumes:
-  postgres_data:
+  auth_data:
   redis_data:
   kafka_data:
+
+networks:
+  reddit-network:
+    driver: bridge

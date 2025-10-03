@@ -25,10 +25,10 @@ class AuthService(auth_pb2_grpc.AuthServiceServicer):
                 email=request.email
             )
 
-            async with get_db_context() as db:
-                db.add(new_user)
-                await db.commit()
-                await db.refresh(new_user)
+            
+            db.add(new_user)
+            await db.commit()
+            await db.refresh(new_user)
 
         return auth_pb2.RegisterUserResponse(
             success=True,
@@ -69,7 +69,7 @@ class AuthService(auth_pb2_grpc.AuthServiceServicer):
 async def serve():
     server = aio.server()
     auth_pb2_grpc.add_AuthServiceServicer_to_server(AuthService(), server)
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port("0.0.0.0:50051")
     await server.start()
     print("Auth Service running on port 50051")
     await server.wait_for_termination()

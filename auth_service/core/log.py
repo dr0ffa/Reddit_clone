@@ -7,7 +7,7 @@ def setup_logger():
         format=settings.logging.format,
         datefmt=settings.logging.datefmt,
     )
-    logger = logging.getLogger("API_gateway")
+    logger = logging.getLogger("api_gateway")
     return logger
 
 
