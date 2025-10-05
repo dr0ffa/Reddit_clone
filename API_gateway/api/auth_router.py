@@ -4,12 +4,12 @@ from authx import AuthX, AuthXConfig, RequestToken
 from datetime import timedelta
 
 
-from api_gateway.schemas.auth_schemas import RegisterUserRequest, AuthUserRequest
-from api_gateway.utils.errors import handle_grpc_error
-from api_gateway.grpc_client import register_user
-from api_gateway.core.auth_config import security
+from schemas.auth_schemas import RegisterUserRequest, AuthUserRequest
+from utils.errors import handle_grpc_error
+from grpc_client import register_user
+from core.auth_config import security
 
-from auth_service.core.config import settings
+from core.auth_config import settings
 #from auth_service.core.hash_password import hash_password, verify_password
 #from auth_service.models.models_db import Users, Mfa
 #from auth_service.models.database import get_db
